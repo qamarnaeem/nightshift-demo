@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>NightshiftAI Live Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Archivo:wdth,wght@62..110,900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0b0d;--tx:#f6f2ea;--acc:#e6c07a;--deep:#b88a3a;--pop:#9ad7ff;--card:#17161a;--sub:#c4bfb5;--mut:#847f76;--line:rgba(246,242,234,.14);--ok:#7fd48a;--bad:#ff8a7a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--tx);font-family:Manrope,'Segoe UI',sans-serif;min-height:100%}
+body{background:radial-gradient(900px 500px at 10% -10%,rgba(230,192,122,.16),transparent 60%),radial-gradient(700px 400px at 100% 0,rgba(154,215,255,.08),transparent 60%),var(--bg)}
+.mono{font-family:'JetBrains Mono',monospace}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 24px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand b{font-family:Archivo;font-stretch:110%;font-weight:900;font-size:26px;letter-spacing:-.01em}.brand b span{color:var(--acc)}
+.brand small{display:block;font-size:10px;font-weight:700;letter-spacing:.3em;color:var(--mut);margin-top:2px}
+.pill{font:700 12px 'JetBrains Mono',monospace;letter-spacing:.08em;border:1.5px solid rgba(154,215,255,.5);color:var(--pop);padding:7px 14px;border-radius:40px;display:flex;align-items:center;gap:8px}
+.pill i{width:8px;height:8px;border-radius:50%;background:var(--pop);display:inline-block}
+.pill.live i{background:var(--ok);box-shadow:0 0 0 0 rgba(127,212,138,.6);animation:pulse 1.4s infinite}
+@keyframes pulse{to{box-shadow:0 0 0 9px rgba(127,212,138,0)}}
+main{display:grid;grid-template-columns:340px 1fr 380px;gap:18px;padding:18px 24px;max-width:1500px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;position:relative;overflow:hidden}
+.card h2{font:700 11px 'JetBrains Mono',monospace;letter-spacing:.16em;text-transform:uppercase;color:var(--acc);margin-bottom:14px}
+/* call panel */
+.lead{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:13px;color:var(--sub);margin-bottom:16px}
+.lead b{display:block;color:var(--tx);font-size:15px;font-weight:800}
+.lead em{font-style:normal;display:block;font:500 10px 'JetBrains Mono',monospace;letter-spacing:.14em;color:var(--mut);text-transform:uppercase;margin-bottom:2px}
+.ring{width:170px;height:170px;border-radius:50%;margin:8px auto 10px;display:grid;place-items:center;border:2px solid var(--line);position:relative;transition:.3s}
+.ring::before{content:"";position:absolute;inset:-14px;border-radius:50%;border:1px solid transparent;transition:.3s}
+.ring .st{font-family:Archivo;font-stretch:80%;font-weight:900;font-size:22px;text-transform:uppercase;letter-spacing:.02em}
+.ring .tm{font:500 13px 'JetBrains Mono',monospace;color:var(--mut);margin-top:4px}
+.ring.listening{border-color:var(--ok)}.ring.listening::before{border-color:rgba(127,212,138,.35);animation:breathe 1.6s infinite}
+.ring.speaking{border-color:var(--acc)}.ring.speaking::before{border-color:rgba(230,192,122,.45);animation:breathe .9s infinite}
+.ring.transfer{border-color:var(--pop)}.ring.ended{border-color:var(--mut);opacity:.7}
+@keyframes breathe{50%{inset:-6px}}
+.node{display:flex;justify-content:center;margin-bottom:14px}
+.node span{font:700 12px 'JetBrains Mono',monospace;background:rgba(230,192,122,.12);border:1px solid rgba(230,192,122,.45);border-radius:30px;padding:5px 12px;color:var(--tx)}
+.btns{display:flex;gap:10px}
+button{font:800 15px Manrope,sans-serif;border:0;border-radius:14px;padding:14px 18px;cursor:pointer;flex:1;transition:.15s}
+button:disabled{opacity:.35;cursor:default}
+#callBtn{background:var(--acc);color:#1a1408}#callBtn:hover:not(:disabled){background:#f0d08f}
+#hangBtn{background:rgba(255,138,122,.14);color:var(--bad);border:1.5px solid rgba(255,138,122,.5)}
+.tip{font-size:12px;color:var(--mut);margin-top:12px;line-height:1.45}
+.tip b{color:var(--sub)}
+details{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+summary{cursor:pointer;font-weight:800;font-size:13px;color:var(--sub)}
+details ol{margin:10px 0 0 18px;font-size:13px;color:var(--sub);line-height:1.5}
+details li{margin-bottom:6px}details b{color:var(--tx)}details q{color:var(--acc);font-style:italic}
+label.k{display:flex;align-items:center;gap:10px;font:500 11px 'JetBrains Mono',monospace;color:var(--mut);margin-top:14px}
+label.k input{flex:1;accent-color:var(--acc)}
+/* transcript */
+#log{display:flex;flex-direction:column;gap:10px;min-height:420px;max-height:70vh;overflow-y:auto;padding-right:4px;scroll-behavior:smooth}
+.msg{max-width:82%;padding:11px 14px;border-radius:16px;font-size:15px;line-height:1.45;position:relative;animation:in .2s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+.msg.bot{align-self:flex-start;background:rgba(230,192,122,.11);border:1px solid rgba(230,192,122,.3);border-bottom-left-radius:6px}
+.msg.you{align-self:flex-end;background:rgba(154,215,255,.1);border:1px solid rgba(154,215,255,.3);border-bottom-right-radius:6px}
+.msg.you.live{opacity:.55;border-style:dashed}
+.msg.sys{align-self:center;background:transparent;border:0;font:600 12px 'JetBrains Mono',monospace;color:var(--mut);padding:2px 0;letter-spacing:.04em}
+.msg.sys.bad{color:var(--bad)}.msg.sys.ok{color:var(--ok)}.msg.sys.acc{color:var(--acc)}
+.msg .who{font:700 10px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:4px;display:flex;gap:8px;align-items:center}
+.msg .who .gap{color:var(--ok);letter-spacing:0}
+.msg .who .cut{color:var(--bad);letter-spacing:0}
+.msg .who .intent{color:var(--pop);letter-spacing:0}
+.empty{color:var(--mut);font-size:14px;text-align:center;margin:auto;line-height:1.6}
+/* outcome */
+pre{font:500 12px/1.5 'JetBrains Mono',monospace;color:var(--sub);white-space:pre-wrap;word-break:break-word;max-height:58vh;overflow:auto}
+pre .k{color:var(--acc)}pre .s{color:var(--pop)}pre .n{color:var(--ok)}
+.hook{display:none;margin-top:12px;padding:10px 12px;border-radius:10px;background:rgba(127,212,138,.1);border:1px solid rgba(127,212,138,.4);font:600 12px 'JetBrains Mono',monospace;color:var(--ok)}
+.hook.show{display:block}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:rgba(246,242,234,.04);border:1px solid var(--line);border-radius:12px;padding:10px}
+.stat em{font-style:normal;display:block;font:500 10px 'JetBrains Mono',monospace;letter-spacing:.12em;color:var(--mut);text-transform:uppercase}
+.stat b{font-family:Archivo;font-stretch:80%;font-weight:900;font-size:24px;line-height:1.1;display:block;margin-top:4px}
+.stat small{font-size:11px;color:var(--mut)}
+html.client .dev{display:none!important}
+#warn{display:none;margin:12px 24px 0;padding:12px 16px;border-radius:12px;background:rgba(255,138,122,.12);border:1px solid rgba(255,138,122,.5);color:var(--bad);font-size:14px}
+@media (max-width:1100px){main{grid-template-columns:1fr 1fr}.card.out{grid-column:1/-1}}
+@media (max-width:720px){main{grid-template-columns:1fr;padding:14px 16px}header{padding:14px 16px}#log{min-height:260px;max-height:50vh}.ring{width:140px;height:140px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <svg width="38" height="38" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.2 2.4a9.6 9.6 0 1 0 6.4 16.6A8.2 8.2 0 0 1 15.2 2.4z" fill="var(--acc)"/><circle cx="18.5" cy="6" r=".9" fill="var(--tx)"/><circle cx="21" cy="10.5" r=".6" fill="var(--tx)"/></svg>
+    <div><b>Nightshift<span>AI</span></b><small>AI FRONTER · LIVE DEMO</small></div>
+  </div>
+  <div class="pill" id="pill"><i></i><span id="pillTxt">READY</span></div>
+</header>
+<div id="warn"></div>
+<main>
+  <section class="card">
+    <h2>Live call</h2>
+    <div class="lead">
+      <div><em>Lead</em><b id="leadName">—</b></div>
+      <div><em>Campaign</em><b id="camp">—</b></div>
+      <div><em>Bot seat</em><b id="botId" class="mono" style="font-size:13px">—</b></div>
+      <div><em>Voice</em><b id="voice" style="font-size:13px">—</b></div>
+    </div>
+    <div class="ring" id="ring"><div style="text-align:center"><div class="st" id="st">Idle</div><div class="tm" id="tm">00:00</div></div></div>
+    <div class="node dev"><span id="nodeChip">no call</span></div>
+    <div class="btns"><button id="callBtn">Start call</button><button id="hangBtn" disabled>Hang up</button></div>
+    <p class="tip"><b>You are the customer.</b> Press Start call, wait for it to connect, say <i>"Hello?"</i> and answer the bot like a real prospect. Use Chrome and, if possible, earphones.</p>
+    <details>
+      <summary>Things to try</summary>
+      <ol>
+        <li><b>Happy path:</b> <q>Hello?</q> → <q>yes</q> → <q>yes, go ahead</q> → <q>yes</q> → <q>no</q> → warm transfer.</li>
+        <li><b>Interrupt it:</b> while it is pitching, say <q>how much does it cost?</q> It stops mid-sentence, answers, and continues.</li>
+        <li><b>Objections:</b> <q>I already have insurance</q>, <q>is this a scam?</q>, <q>send me something in the mail</q>, <q>I can't afford it</q>, <q>I need to ask my wife</q>.</li>
+        <li><b>Off-script question:</b> <q>what's the weather like there?</q> One fallback line, then it exits. It never improvises.</li>
+        <li><b>Voicemail:</b> at the start say <q>Hi, you've reached Robert, leave a message after the tone.</q> The bot detects the machine and drops the call.</li>
+        <li><b>DNC:</b> <q>take me off your list</q>.</li>
+      </ol>
+    </details>
+    <label class="k dev">TURN-END SILENCE <input type="range" id="sil" min="250" max="900" step="50" value="450"><span id="silV">450 ms</span></label>
+  </section>
+
+  <section class="card">
+    <h2>Transcript</h2>
+    <div id="log"><div class="empty">Nothing yet.<br>Start the call and say hello.</div></div>
+  </section>
+
+  <section class="card out">
+    <h2>Call outcome · webhook payload</h2>
+    <div class="stats">
+      <div class="stat"><em>Response gap</em><b id="sGap">—</b><small>median, ms</small></div>
+      <div class="stat"><em>Interrupts</em><b id="sInt">0</b><small>handled</small></div>
+      <div class="stat"><em>Off-script</em><b id="sOff">0</b><small>lines said</small></div>
+    </div>
+    <pre id="json">{ waiting for a call }</pre>
+    <div class="hook" id="hook"></div>
+  </section>
+</main>
+
+<script>const e={bot_id:"bot_01_sarah",campaign:"Final Expense",lead:{first_name:"Robert",company:"Senior Benefit Advisors",agent:"Sarah"},fallback:"Fair enough. I'll have a colleague follow up with you. Have a good day.",fallback_disposition:"FALLBACK_EXIT",backchannel:["uh-huh","uh huh","mm-hm","mm hm","mhm","okay","ok","right","yeah","yes","sure","alright","i see","go on","hmm"],voicemail:["leave a message","leave your message","after the tone","after the beep","not available","can't take your call","cannot take your call","unable to take your call","you have reached","you've reached","voicemail","voice mail","the number you have dialed","has been disconnected","is not in service","please record","at the tone","mailbox","call you back as soon as","get back to you as soon as"],intents:{dnc:["take me off","remove my number","do not call","don't call","stop calling","off your list"],not_interested:["not interested","no thanks","no thank you","don't want","not for me","don't need","waste of time","no i'm good","i'm good"],who_is_this:["who is this","who's this","who are you","what company","where did you get","how did you get","what is this about","what's this about","what is this regarding","which company"],already_have:["already have","already got","i have insurance","i'm covered","we're covered","already covered","have a policy","have coverage","got coverage"],callback:["call me back","call back","call me later","call later","not a good time","bad time","i'm busy","i'm driving","at work","another time"],scam:["scam","is this legit","is this real","fraud","spam","robot","are you a bot","are you real","recording"],send_info:["send me","mail me","email me","in the mail","send information","send it to me","put it in writing"],no_money:["can't afford","cannot afford","no money","fixed income","too expensive","don't have money","broke"],spouse:["my wife","my husband","talk to my","ask my","my son","my daughter","my kids"],cost:["how much","what does it cost","what's the cost","how much is it","price","expensive","cost"],no:["no","nope","nah","wrong number","he's not here","she's not here","not here","isn't here","negative","i don't","don't smoke","never"],yes:["yes","yeah","yep","yup","speaking","this is he","this is she","that's me","it is","correct","go ahead","sure","okay","ok","alright","tell me more","i am","i do","uh huh","i smoke","sometimes"]},nodes:{opener:{say:"Hi, this is {agent} calling from {company} on a recorded line. Am I speaking with {first_name}?",expect:{yes:"pitch",no:"wrong_person",who_is_this:"who_is_this",not_interested:"soft_close",dnc:"dnc",callback:"callback"}},who_is_this:{say:"Sure. I'm {agent} with {company}. We help seniors with the state regulated final expense programs. Is this {first_name}?",expect:{yes:"pitch",no:"wrong_person",not_interested:"soft_close",dnc:"dnc",callback:"callback"}},wrong_person:{say:"Oh, I'm sorry about that. I'll make a note. Have a good day.",action:"hangup",disposition:"WRONG_NUMBER"},pitch:{say:"Great. {first_name}, the reason for my call is that you recently requested information on the state regulated final expense program. It covers funeral and burial costs so your family isn't left with the bill. Now, I'm not an agent. I just have two quick questions to see what you qualify for. Is that alright?",expect:{yes:"q_age",not_interested:"soft_close",already_have:"obj_already_have",cost:"obj_cost",scam:"obj_scam",send_info:"obj_send_info",no_money:"obj_no_money",spouse:"obj_spouse",who_is_this:"who_is_this",callback:"callback",dnc:"dnc",no:"soft_close"}},obj_already_have:{say:"That's good to hear, most folks I speak with do. This is just to make sure you're not overpaying for what you have. It takes about two minutes. Fair enough?",expect:{yes:"q_age",no:"soft_close",not_interested:"soft_close",dnc:"dnc",callback:"callback"}},obj_cost:{say:"Good question. Plans start at around a dollar a day, but the exact rate depends on your age and health. Let me ask you two quick questions so the specialist can give you the real number. Okay?",expect:{yes:"q_age",no:"soft_close",not_interested:"soft_close",dnc:"dnc",callback:"callback"}},obj_scam:{say:"I understand, there are a lot of calls out there. I'm {agent} with {company}, this is a recorded line, and I'm not asking for any payment or bank details. I only have two quick questions, and a licensed specialist explains the rest. Fair enough?",expect:{yes:"q_age",no:"soft_close",not_interested:"soft_close",dnc:"dnc",send_info:"obj_send_info"}},obj_send_info:{say:"I'd be glad to, but the rates depend on your age and health, so a mailer would only show generic numbers. Two quick questions and the specialist can give you the exact figure. Okay?",expect:{yes:"q_age",no:"soft_close",not_interested:"soft_close",dnc:"dnc"}},obj_no_money:{say:"I hear you, and that's exactly who this program is for. Plans start around a dollar a day and the rate never goes up. Let me just check what you'd qualify for. Alright?",expect:{yes:"q_age",no:"soft_close",not_interested:"soft_close",dnc:"dnc"}},obj_spouse:{say:"Of course, it's a family decision. This is just a quick pre-qualification so you both have the real numbers to talk over. Two questions, then the specialist can call back when you're together. Sound good?",expect:{yes:"q_age",no:"callback",not_interested:"soft_close",dnc:"dnc",callback:"callback"}},q_age:{say:"Perfect. First question. Are you between fifty and eighty five years old?",capture:"age_50_to_85",expect:{yes:"q_tobacco",no:"disqualify",not_interested:"soft_close",dnc:"dnc"}},q_tobacco:{say:"Okay. And do you currently use any tobacco products?",capture:"tobacco",expect:{yes:"transfer",no:"transfer",not_interested:"soft_close",dnc:"dnc"}},transfer:{say:"Great, that's all I needed. I'm going to bring on a licensed specialist who will go over your options. It will take just a second, please stay on the line.",action:"transfer",disposition:"TRANSFER"},disqualify:{say:"I understand. This particular program is for folks between fifty and eighty five, so I won't take up any more of your time. Have a great day.",action:"hangup",disposition:"NQ"},soft_close:{say:"No problem at all. I'll take you off our list. Have a good day.",action:"hangup",disposition:"NI"},dnc:{say:"Understood. I'm removing your number right now. You won't hear from us again. Take care.",action:"hangup",disposition:"DNC"},callback:{say:"Sure thing. I'll have someone reach back out to you later today. Thanks, {first_name}.",action:"hangup",disposition:"CALLBACK"},voicemail:{say:"Hi {first_name}, this is {agent} from {company} about the final expense information you requested. We'll try you again later. Take care.",action:"voicemail_drop",disposition:"AM"}},text:{opener:"Hi, this is Sarah calling from Senior Benefit Advisors on a recorded line. Am I speaking with Robert?",who_is_this:"Sure. I'm Sarah with Senior Benefit Advisors. We help seniors with the state regulated final expense programs. Is this Robert?",wrong_person:"Oh, I'm sorry about that. I'll make a note. Have a good day.",pitch:"Great. Robert, the reason for my call is that you recently requested information on the state regulated final expense program. It covers funeral and burial costs so your family isn't left with the bill. Now, I'm not an agent. I just have two quick questions to see what you qualify for. Is that alright?",obj_already_have:"That's good to hear, most folks I speak with do. This is just to make sure you're not overpaying for what you have. It takes about two minutes. Fair enough?",obj_cost:"Good question. Plans start at around a dollar a day, but the exact rate depends on your age and health. Let me ask you two quick questions so the specialist can give you the real number. Okay?",obj_scam:"I understand, there are a lot of calls out there. I'm Sarah with Senior Benefit Advisors, this is a recorded line, and I'm not asking for any payment or bank details. I only have two quick questions, and a licensed specialist explains the rest. Fair enough?",obj_send_info:"I'd be glad to, but the rates depend on your age and health, so a mailer would only show generic numbers. Two quick questions and the specialist can give you the exact figure. Okay?",obj_no_money:"I hear you, and that's exactly who this program is for. Plans start around a dollar a day and the rate never goes up. Let me just check what you'd qualify for. Alright?",obj_spouse:"Of course, it's a family decision. This is just a quick pre-qualification so you both have the real numbers to talk over. Two questions, then the specialist can call back when you're together. Sound good?",q_age:"Perfect. First question. Are you between fifty and eighty five years old?",q_tobacco:"Okay. And do you currently use any tobacco products?",transfer:"Great, that's all I needed. I'm going to bring on a licensed specialist who will go over your options. It will take just a second, please stay on the line.",disqualify:"I understand. This particular program is for folks between fifty and eighty five, so I won't take up any more of your time. Have a great day.",soft_close:"No problem at all. I'll take you off our list. Have a good day.",dnc:"Understood. I'm removing your number right now. You won't hear from us again. Take care.",callback:"Sure thing. I'll have someone reach back out to you later today. Thanks, Robert.",voicemail:"Hi Robert, this is Sarah from Senior Benefit Advisors about the final expense information you requested. We'll try you again later. Take care.",fallback:"Fair enough. I'll have a colleague follow up with you. Have a good day."},voice_name:"cloned voice"},t=e=>document.getElementById(e),o=window.SpeechRecognition||window.webkitSpeechRecognition;o||(t("warn").style.display="block",t("warn").textContent="This browser has no speech recognition. Open the demo in Google Chrome (desktop or Android).");document.documentElement.classList.add("client");let n,a,i,s,r,l,c={},d=0,u=null,h="";Promise.resolve(e).then(e=>{n=e;for(const e in n.text)c[e]=new Audio("audio/"+e+".mp3"),c[e].preload="auto";t("leadName").textContent=n.lead.first_name,t("camp").textContent=n.campaign,t("botId").textContent=n.bot_id,t("voice").textContent=n.lead.agent+" · "+(n.voice_name||n.voice)});const p=e=>e.toLowerCase().replace(/[^a-z0-9' ]+/g," ").replace(/\s+/g," ").trim(),m=e=>p(e).split(" ").filter(Boolean),g=(e,t)=>new RegExp("(^|\\W)"+t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"(\\W|$)").test(e);const y=e=>n.voicemail.some(t=>g(p(e),p(t)));function f(e,o){t("ring").className="ring "+e,t("st").textContent=o}function b(e,o=""){const n=document.createElement("div");n.className="msg sys "+o,n.textContent=e,t("log").appendChild(n),t("log").scrollTop=1e9}function _(e,o,a={}){const i=document.createElement("div");i.className="msg "+e;let s="bot"===e?n.lead.agent+" · bot":"Customer";return null!=a.gap&&(s+=` <span class="gap">▲ ${a.gap} ms</span>`),a.intent,i.innerHTML=`<div class="who">${s}</div><div class="t"></div>`,i.querySelector(".t").textContent=o,t("log").appendChild(i),t("log").scrollTop=1e9,i}let w=null;function k(e,t){w&&(w.remove(),w=null),_("you",e,{intent:t})}function v(){const e={bot_id:n.bot_id,call_id:i.id,lead_id:i.lead_id,campaign:n.campaign,started_at:i.startedAt,ended_at:i.endedAt||null,disposition:i.disposition||"IN_PROGRESS",captured:i.captured,transcript:i.transcript,response_gaps_ms:i.gaps,interrupted:i.interrupted,off_script_lines:0};t("json").innerHTML=JSON.stringify(e,null,1).replace(/"([^"]+)":/g,'<span class="k">"$1"</span>:').replace(/: "([^"]*)"/g,': <span class="s">"$1"</span>').replace(/: (\d+\.?\d*)/g,': <span class="n">$1</span>');const o=i.gaps.slice().sort((e,t)=>e-t);t("sGap").textContent=o.length?o[Math.floor(o.length/2)]:"—",t("sInt").textContent=i.interrupted}function x(e){const t=new(window.AudioContext||window.webkitAudioContext),o=t.createGain();o.gain.value=.06,o.connect(t.destination);let n=t.currentTime;for(let a=0;a<e;a++){for(const e of[440,480]){const a=t.createOscillator();a.frequency.value=e,a.connect(o),a.start(n),a.stop(n+.9)}n+=1.6}return new Promise(o=>setTimeout(()=>{t.close(),o()},1600*(e-1)+1e3))}function I(){if(a){a.onend=null;try{a.stop()}catch(e){}a=null}}function q(e,o,a){if(i.active&&e&&(s&&s.idx!==a&&!s.done&&T(),s&&s.idx===a||(s={idx:a,text:"",done:!1,ignore:!1}),!s.done&&!s.ignore)){if(s.text=e,"speaking"===i.phase){if(function(e){const t=m(e);if(!t.length)return!1;const o=new Set(m((u?n.text[u]:"")+" "+h));return t.filter(e=>o.has(e)).length/t.length>=.6&&t.length>=2}(e))return void(s.ignore=!0);if((e=>{const t=m(e);return t.length<=2&&t.every(e=>n.backchannel.includes(e)||n.backchannel.includes(t.join(" ")))})(e))return void(o&&(s.done=!0));!function(){if(!u)return;c[u].pause(),c[u].currentTime=0,i.interrupted++,b("customer interrupted · bot stopped and listened","bad"),u=null,i.phase="listening",f("listening","Listening"),v()}()}"ended"!==i.phase&&"ringing"!==i.phase&&(!function(e){w||(w=_("you live","")),w.querySelector(".t").textContent=e,t("log").scrollTop=1e9}(e),clearTimeout(r),o?T():r=setTimeout(T,+t("sil").value))}}function T(){if(clearTimeout(r),!s||s.done)return;s.done=!0;const e=s.text;if(d=performance.now(),clearTimeout(l),"listen_first"===i.phase){const t=y(e)||m(e).length>14;return k(e,t?"answering machine":"human"),i.transcript.push({t:+((d-i.t0)/1e3).toFixed(1),who:"prospect",text:e}),t?(b("voicemail detected in the first seconds · dropping voicemail line","acc"),S("voicemail")):S("opener")}const t=y(e)?"voicemail":function(e){const t=p(e);for(const e in n.intents)if(n.intents[e].some(e=>g(t,p(e))))return e;return null}(e);if(k(e,t||"no match"),i.transcript.push({t:+((d-i.t0)/1e3).toFixed(1),who:"prospect",text:e,intent:t}),"voicemail"===t)return S("voicemail");const o=n.nodes[i.node];o.capture&&t&&(i.captured[o.capture]=t);const a=o.expect&&t?o.expect[t]:null;if(a)return S(a);b("off-script question · bot closed politely","bad"),C("fallback").then(()=>j(n.fallback_disposition,"fallback exit"))}function C(e){i.phase="speaking",f("speaking","Speaking"),u=e;const t=c[e];t.currentTime=0;const o=d?Math.round(performance.now()-d):null;return null!=o&&i.gaps.push(o),d=0,_("bot",n.text[e],{gap:o}),i.transcript.push({t:+((performance.now()-i.t0)/1e3).toFixed(1),who:"bot",text:n.text[e]}),h=n.text[e],v(),new Promise(o=>{t.onended=()=>{u===e&&(u=null),o(!0)},t.onpause=()=>{t.currentTime&&t.currentTime<t.duration&&o(!1)},t.play().catch(()=>o(!0))})}async function S(e){if(!i.active)return;i.node=e,i.path.push(e),t("nodeChip").textContent="node · "+e;const o=n.nodes[e],a=await C(e);if(i.active&&a){if("transfer"===o.action)return async function(e){i.phase="transfer",I(),f("transfer","Transfer"),t("nodeChip").textContent="warm transfer → closer queue",b('bridging to closer · whisper: "'+n.lead.first_name+", "+Object.entries(i.captured).map(([e,t])=>e+"="+t).join(", ")+'"',"acc"),await x(1),b("closer connected · bot leaves the call","ok"),j(e.disposition,"warm transfer")}(o);if("hangup"===o.action||"voicemail_drop"===o.action)return j(o.disposition,o.action);i.phase="listening",f("listening","Listening")}}function j(e,o){i&&i.active&&(i.active=!1,i.phase="ended",i.disposition=e,i.endedAt=(new Date).toISOString(),clearInterval(i.timer),clearTimeout(r),clearTimeout(l),I(),u&&(c[u].pause(),u=null),w&&(w.remove(),w=null),f("ended","Ended"),t("nodeChip").textContent="disposition · "+e,t("callBtn").disabled=!1,t("hangBtn").disabled=!0,t("callBtn").textContent="Call again",t("pill").className="pill",t("pillTxt").textContent="READY",b("call ended · "+o+" · disposition "+e,"TRANSFER"===e?"ok":""),v(),t("hook").textContent="POST /webhook → 200 OK · disposition "+e+" pushed to dialer (simulated in this demo)",t("hook").className="hook show")}t("callBtn").onclick=function(){if(!n||!o)return;const e=new Date;i={active:!0,id:"c_"+e.getTime().toString(36),lead_id:"L"+Math.floor(1e5+9e5*Math.random()),startedAt:e.toISOString(),t0:performance.now(),path:[],captured:{},transcript:[],gaps:[],interrupted:0,node:null,phase:"ringing",disposition:null},s=null,d=0,u=null,h="",w=null,t("log").innerHTML="",t("hook").className="hook",t("sOff").textContent="0",t("callBtn").disabled=!0,t("hangBtn").disabled=!1,t("pill").className="pill live",t("pillTxt").textContent="ON CALL",t("nodeChip").textContent="dialing",f("","Ringing"),i.timer=setInterval(()=>t("tm").textContent=(e=>{const t=Math.floor(e/1e3);return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0")})(performance.now()-i.t0),500),v(),x(2).then(()=>{i.active&&(b("connected · listening for the customer","ok"),i.phase="listen_first",f("listening","Listening"),t("nodeChip").textContent="answer detection",function(){a=new o,a.continuous=!0,a.interimResults=!0,a.lang="en-US",a.onresult=e=>{for(let t=e.resultIndex;t<e.results.length;t++)q(e.results[t][0].transcript.trim(),e.results[t].isFinal,t)},a.onerror=e=>{"not-allowed"===e.error&&(t("warn").style.display="block",t("warn").textContent="Microphone blocked. Allow the mic for this page and press Start call again.",j("NO_MIC","microphone blocked"))},a.onend=()=>{if(i&&i.active)try{a.start()}catch(e){}};try{a.start()}catch(e){}}(),l=setTimeout(()=>{i.active&&"listen_first"===i.phase&&(d=0,S("opener"))},3e3))})},t("hangBtn").onclick=()=>j("HANGUP","customer hung up"),t("sil").oninput=e=>t("silV").textContent=e.target.value+" ms";
+</script>
+</body>
+</html>
